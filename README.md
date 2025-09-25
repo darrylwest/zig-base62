@@ -140,4 +140,8 @@ zig test src/base62.zig
 - Zig 0.15.0 or later
 - No external dependencies
 
+## License
+
+Apache 2.0
+
 ###### dpw | 2025.09.25
