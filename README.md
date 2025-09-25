@@ -112,8 +112,11 @@ zig build test
 # Run tests directly
 zig test src/base62.zig
 
-# Run code coverage analysis
+# Run code coverage analysis (requires kcov)
 zig build coverage
+
+# Run simple coverage analysis (no external tools)
+zig build test-coverage
 ```
 
 ## Use Cases

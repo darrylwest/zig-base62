@@ -25,20 +25,26 @@ if ! command -v kcov &> /dev/null; then
     exit 0
 fi
 
-# Compile test binary
+# Try to compile test binary for coverage analysis
 echo "📦 Compiling test binary..."
-zig test src/base62.zig --test-no-exec -ftest-exec-dir=coverage/
+if ! zig test src/base62.zig --test-no-exec 2>/dev/null; then
+    echo "⚠️  Direct test binary compilation not supported in this Zig version"
+    echo "🧪 Running tests with kcov wrapper..."
 
-# Find the test binary
-TEST_BINARY=$(find coverage -name "*test*" -type f -executable | head -1)
+    # Alternative approach: run kcov with zig test directly
+    kcov --exclude-pattern=/usr,/opt,/tmp,/System coverage/html zig test src/base62.zig
+else
+    # Find the test binary (this path may vary by Zig version)
+    TEST_BINARY=$(find . -name "*test*" -type f -executable 2>/dev/null | head -1)
 
-if [ -z "$TEST_BINARY" ]; then
-    echo "❌ Could not find test binary"
-    exit 1
+    if [ -z "$TEST_BINARY" ]; then
+        echo "⚠️  Could not find test binary, using direct kcov approach..."
+        kcov --exclude-pattern=/usr,/opt,/tmp,/System coverage/html zig test src/base62.zig
+    else
+        echo "🧪 Running tests with coverage on binary: $TEST_BINARY"
+        kcov --exclude-pattern=/usr,/opt,/tmp,/System coverage/html "$TEST_BINARY"
+    fi
 fi
-
-echo "🧪 Running tests with coverage..."
-kcov --exclude-pattern=/usr,/opt,/tmp,/System coverage/html "$TEST_BINARY"
 
 # Generate summary
 echo ""
