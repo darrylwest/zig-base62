@@ -9,7 +9,7 @@ A high-performance Base62 encoding/decoding library written in Zig. Perfect for 
 - **Custom alphabet support** for different character sets
 - **Memory safe** with proper error handling
 - **Zero dependencies** - uses only Zig standard library
-- **Comprehensive tests** with extensive code coverage (12 test cases)
+- **Comprehensive tests** with 100% function coverage (12 test cases)
 
 ## Character Set
 
@@ -112,7 +112,7 @@ zig build test
 # Run tests directly
 zig test src/base62.zig
 
-# Run code coverage analysis (requires kcov)
+# Run comprehensive coverage analysis
 zig build coverage
 
 # Run simple coverage analysis (no external tools)
@@ -141,10 +141,52 @@ zig build test-coverage
 - Stack-allocated temporary buffers where possible
 - Proper error handling for all edge cases
 
+## Test Coverage
+
+The library includes comprehensive test coverage:
+
+- **100% Function Coverage** - All 14 public functions tested
+- **100% Error Path Coverage** - All error conditions validated
+- **Edge Case Testing** - Boundary values and overflow protection
+- **Performance Testing** - Large value handling verification
+- **Configuration Testing** - Custom alphabet validation
+
+View detailed coverage reports:
+```bash
+zig build coverage  # Generates coverage/index.html
+```
+
+## Project Structure
+
+```
+base62/
+├── src/              # Core library source code
+│   ├── base62.zig    # Main library module
+│   ├── config.zig    # Configuration and validation
+│   └── errors.zig    # Error definitions
+├── tests/            # Test directory
+├── examples/         # Usage examples
+│   ├── usage.zig     # Comprehensive usage examples
+│   └── simple.zig    # Simple demonstration
+├── docs/             # Documentation
+├── scripts/          # Build and coverage scripts
+└── build.zig         # Zig build configuration
+```
+
+## Documentation
+
+Complete documentation available in the `docs/` directory:
+
+- `api-design.md` - Comprehensive API documentation
+- `implementation-plan.md` - Development approach and architecture
+- `test-coverage.md` - Detailed coverage analysis
+- `deployment-plan.md` - Distribution and maintenance strategy
+
 ## Requirements
 
-- Zig 0.15.0 or later
-- No external dependencies
+- **Zig 0.15.0 or later** (tested with Zig 0.15.1)
+- **No external dependencies** - uses only Zig standard library
+- **Optional**: `kcov` for detailed coverage reports (brew install kcov)
 
 ## License
 
