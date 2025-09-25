@@ -21,5 +21,6 @@ _TBD_
 * determine function API for encode and decode
 * create implementation plan
 * implement unit tests
+* deployment plan
 
 
