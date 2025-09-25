@@ -9,7 +9,7 @@ A high-performance Base62 encoding/decoding library written in Zig. Perfect for 
 - **Custom alphabet support** for different character sets
 - **Memory safe** with proper error handling
 - **Zero dependencies** - uses only Zig standard library
-- **Comprehensive tests** with 100% code coverage
+- **Comprehensive tests** with extensive code coverage (12 test cases)
 
 ## Character Set
 
@@ -111,6 +111,9 @@ zig build test
 
 # Run tests directly
 zig test src/base62.zig
+
+# Run code coverage analysis
+zig build coverage
 ```
 
 ## Use Cases

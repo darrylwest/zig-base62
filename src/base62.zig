@@ -60,18 +60,28 @@ pub fn decodeIntWithConfig(encoded: []const u8, cfg: Base62Config) Base62Error!u
         const digit_value = try cfg.charToValue(char);
 
         // Check for overflow before multiplication
-        if (result > std.math.maxInt(u64) - @as(u64, digit_value) * base) {
+        const digit_u64 = @as(u64, digit_value);
+
+        // Check if base * digit_value would overflow
+        if (base > 0 and digit_u64 > std.math.maxInt(u64) / base) {
             return Base62Error.Overflow;
         }
 
-        result += @as(u64, digit_value) * base;
+        const product = digit_u64 * base;
+
+        // Check if result + product would overflow
+        if (result > std.math.maxInt(u64) - product) {
+            return Base62Error.Overflow;
+        }
+
+        result += product;
 
         // Check for overflow before next base multiplication
         if (i > 0 and base > std.math.maxInt(u64) / 62) {
             return Base62Error.Overflow;
         }
 
-        base *= 62;
+        if (i > 0) base *= 62;
     }
 
     return result;
@@ -205,4 +215,131 @@ test "encode bytes basic" {
     defer allocator.free(decoded);
 
     try std.testing.expectEqual(@as(u8, 'A'), decoded[0]);
+}
+
+// Additional comprehensive tests for better coverage
+test "error conditions" {
+    // Test empty string decoding
+    try std.testing.expectError(Base62Error.InvalidCharacter, decodeInt(""));
+
+    // Test invalid characters
+    try std.testing.expectError(Base62Error.InvalidCharacter, decodeInt("@"));
+    try std.testing.expectError(Base62Error.InvalidCharacter, decodeInt("!"));
+    try std.testing.expectError(Base62Error.InvalidCharacter, decodeInt("#"));
+
+    // Test invalid alphabet configurations
+    try std.testing.expectError(Base62Error.InvalidAlphabet, Base62Config.init("abc")); // Too short
+    try std.testing.expectError(Base62Error.InvalidAlphabet, Base62Config.init("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx0")); // Duplicate
+}
+
+test "maximum values" {
+    const allocator = std.testing.allocator;
+
+    // Test maximum u64 value
+    const max_val = std.math.maxInt(u64);
+    const encoded_max = try encodeInt(max_val, allocator);
+    defer allocator.free(encoded_max);
+
+    const decoded_max = try decodeInt(encoded_max);
+    try std.testing.expectEqual(max_val, decoded_max);
+}
+
+test "character set validation" {
+    const allocator = std.testing.allocator;
+
+    // Test all individual characters in default alphabet
+    for (DEFAULT_ALPHABET, 0..) |char, i| {
+        const char_str = [_]u8{char};
+        const decoded = try decodeInt(&char_str);
+        try std.testing.expectEqual(@as(u64, i), decoded);
+
+        const re_encoded = try encodeInt(@as(u64, i), allocator);
+        defer allocator.free(re_encoded);
+        try std.testing.expectEqualStrings(&char_str, re_encoded);
+    }
+}
+
+test "large value range" {
+    const allocator = std.testing.allocator;
+    const large_values = [_]u64{
+        1000000,
+        1000000000,
+        1000000000000,
+        18446744073709551614, // Max u64 - 1
+    };
+
+    for (large_values) |value| {
+        const encoded = try encodeInt(value, allocator);
+        defer allocator.free(encoded);
+
+        const decoded = try decodeInt(encoded);
+        try std.testing.expectEqual(value, decoded);
+
+        // Verify encoded string only contains valid base62 characters
+        for (encoded) |char| {
+            const is_valid = (char >= '0' and char <= '9') or
+                (char >= 'A' and char <= 'Z') or
+                (char >= 'a' and char <= 'z');
+            try std.testing.expect(is_valid);
+        }
+    }
+}
+
+test "byte array edge cases" {
+    const allocator = std.testing.allocator;
+
+    // Empty byte array
+    const empty_data = "";
+    const empty_encoded = try encodeBytes(empty_data, allocator);
+    defer allocator.free(empty_encoded);
+    try std.testing.expect(empty_encoded.len > 0);
+
+    const empty_decoded = try decodeBytes(empty_encoded, allocator);
+    defer allocator.free(empty_decoded);
+
+    // Single byte arrays
+    const single_bytes = [_]u8{ 0, 1, 255 };
+    for (single_bytes) |byte| {
+        const byte_data = [_]u8{byte};
+        const encoded = try encodeBytes(&byte_data, allocator);
+        defer allocator.free(encoded);
+
+        const decoded = try decodeBytes(encoded, allocator);
+        defer allocator.free(decoded);
+        try std.testing.expect(decoded.len > 0);
+    }
+}
+
+test "config validation edge cases" {
+    // Test config validation with various invalid alphabets
+    const invalid_alphabets = [_][]const u8{
+        "", // Empty
+        "a", // Too short
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0", // Too long with duplicate
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx", // 61 chars (too short)
+    };
+
+    for (invalid_alphabets) |alphabet| {
+        try std.testing.expectError(Base62Error.InvalidAlphabet, Base62Config.init(alphabet));
+    }
+
+    // Test valid config
+    const valid_config = try Base62Config.init(DEFAULT_ALPHABET);
+    try valid_config.validate();
+}
+
+test "overflow detection" {
+    // Test string that would cause overflow during decoding
+    // Create a very long string that should trigger overflow
+    const allocator = std.testing.allocator;
+    const long_string = try allocator.alloc(u8, 20);
+    defer allocator.free(long_string);
+
+    // Fill with 'z' (maximum base62 digit)
+    for (long_string) |*char| {
+        char.* = 'z';
+    }
+
+    // This should trigger overflow error
+    try std.testing.expectError(Base62Error.Overflow, decodeInt(long_string));
 }
