@@ -115,7 +115,7 @@ jobs:
         echo "See [README.md](README.md) for complete documentation and examples." >> RELEASE_NOTES.md
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: Base62 Library ${{ github.ref_name }}
         body_path: RELEASE_NOTES.md
@@ -129,7 +129,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload coverage to release
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: release-coverage-${{ github.ref_name }}
         path: coverage/

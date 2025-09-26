@@ -5,9 +5,9 @@ on:
     # Run weekly security scans
     - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
   push:
-    branches: [ main, master ]
+    branches: [main]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
 
 jobs:
   security-scan:
@@ -242,7 +242,7 @@ EOF
         echo "✅ Security report generated"
 
     - name: Upload security report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-assessment-report
         path: SECURITY_REPORT.md

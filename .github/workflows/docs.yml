@@ -2,9 +2,9 @@ name: Documentation
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
 
 jobs:
   docs-check:
@@ -153,7 +153,7 @@ EOF
         echo "✅ Documentation report generated"
 
     - name: Upload documentation report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: documentation-report
         path: DOC_REPORT.md
