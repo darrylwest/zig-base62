@@ -110,7 +110,7 @@ pub fn encodeBytesWithConfig(data: []const u8, cfg: Base62Config, allocator: std
         defer allocator.free(encoded_byte);
 
         // Copy the encoded byte to temp buffer
-        @memcpy(temp_buffer[total_length..total_length + encoded_byte.len], encoded_byte);
+        @memcpy(temp_buffer[total_length .. total_length + encoded_byte.len], encoded_byte);
         total_length += encoded_byte.len;
     }
 
