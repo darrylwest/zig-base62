@@ -243,7 +243,7 @@ Complete documentation available in the `docs/` directory:
 
 - **Zig 0.15.0 or later** (tested with Zig 0.15.1)
 - **No external dependencies** - uses only Zig standard library
-- **Optional**: `kcov` for detailed coverage reports (brew install kcov)
+- **No external dependencies for coverage** - uses Zig-native coverage analysis
 
 ## License
 

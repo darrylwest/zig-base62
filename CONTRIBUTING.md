@@ -8,7 +8,7 @@ Thank you for your interest in contributing to the Zig Base62 library! This docu
 
 - **Zig 0.15.0 or later** (tested with Zig 0.15.1)
 - **Git** for version control
-- **Optional**: `kcov` for coverage reports
+- **Coverage analysis** uses built-in Zig-native tools (no external dependencies)
 
 ### Development Setup
 
