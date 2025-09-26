@@ -1,5 +1,9 @@
 # Zig Base62 Encode/Decode
 
+[![CI](https://github.com/USERNAME/zig-base62/workflows/CI/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
+[![Security](https://github.com/USERNAME/zig-base62/workflows/Security/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
+[![Documentation](https://github.com/USERNAME/zig-base62/workflows/Documentation/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
+
 A high-performance Base62 encoding/decoding library written in Zig. Perfect for generating short, URL-safe identifiers and keys.
 
 ## Features
@@ -160,6 +164,8 @@ zig build coverage  # Generates coverage/index.html
 
 ```
 base62/
+├── .github/
+│   └── workflows/    # GitHub Actions CI/CD pipelines
 ├── src/              # Core library source code
 │   ├── base62.zig    # Main library module
 │   ├── config.zig    # Configuration and validation
@@ -169,7 +175,11 @@ base62/
 │   ├── usage.zig     # Comprehensive usage examples
 │   └── simple.zig    # Simple demonstration
 ├── docs/             # Documentation
+│   ├── api-design.md # API specification
+│   ├── test-coverage.md # Coverage analysis
+│   └── github-actions.md # CI/CD documentation
 ├── scripts/          # Build and coverage scripts
+├── CONTRIBUTING.md   # Contributor guidelines
 └── build.zig         # Zig build configuration
 ```
 
@@ -181,6 +191,7 @@ Complete documentation available in the `docs/` directory:
 - `implementation-plan.md` - Development approach and architecture
 - `test-coverage.md` - Detailed coverage analysis
 - `deployment-plan.md` - Distribution and maintenance strategy
+- `github-actions.md` - CI/CD workflows and automation
 
 ## Requirements
 

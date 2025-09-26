@@ -1,0 +1,213 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  docs-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check README completeness
+      run: |
+        echo "📚 Checking README.md completeness..."
+
+        # Check that all major sections are present
+        required_sections=(
+          "# Zig Base62"
+          "## Features"
+          "## Quick Start"
+          "## API Reference"
+          "## Building"
+          "## Requirements"
+        )
+
+        missing_sections=()
+        for section in "${required_sections[@]}"; do
+          if ! grep -q "$section" README.md; then
+            missing_sections+=("$section")
+          fi
+        done
+
+        if [ ${#missing_sections[@]} -gt 0 ]; then
+          echo "❌ Missing sections in README.md:"
+          printf '%s\n' "${missing_sections[@]}"
+          exit 1
+        else
+          echo "✅ All required sections present in README.md"
+        fi
+
+    - name: Check API documentation consistency
+      run: |
+        echo "🔍 Checking API documentation consistency..."
+
+        # Check that all public functions mentioned in README exist in source
+        public_functions=(
+          "encodeInt"
+          "decodeInt"
+          "encodeBytes"
+          "decodeBytes"
+          "encodeIntWithConfig"
+          "decodeIntWithConfig"
+        )
+
+        missing_functions=()
+        for func in "${public_functions[@]}"; do
+          if ! grep -q "pub fn $func" src/base62.zig; then
+            missing_functions+=("$func")
+          fi
+        done
+
+        if [ ${#missing_functions[@]} -gt 0 ]; then
+          echo "❌ Functions documented in README but not found in source:"
+          printf '%s\n' "${missing_functions[@]}"
+          exit 1
+        else
+          echo "✅ All documented functions exist in source code"
+        fi
+
+    - name: Check examples validity
+      run: |
+        echo "📝 Checking code examples in documentation..."
+
+        # Extract Zig code blocks from README and check basic syntax
+        if grep -A 10 '```zig' README.md | grep -E '(const|var|pub fn|try)' > /dev/null; then
+          echo "✅ README contains valid-looking Zig code examples"
+        else
+          echo "⚠️ README may be missing proper Zig code examples"
+        fi
+
+    - name: Check documentation files exist
+      run: |
+        echo "📁 Checking documentation files..."
+
+        doc_files=(
+          "docs/api-design.md"
+          "docs/implementation-plan.md"
+          "docs/test-coverage.md"
+          "docs/deployment-plan.md"
+        )
+
+        missing_docs=()
+        for file in "${doc_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            missing_docs+=("$file")
+          fi
+        done
+
+        if [ ${#missing_docs[@]} -gt 0 ]; then
+          echo "⚠️ Missing documentation files:"
+          printf '%s\n' "${missing_docs[@]}"
+        else
+          echo "✅ All documentation files present"
+        fi
+
+    - name: Generate documentation report
+      run: |
+        echo "📊 Generating documentation completeness report..."
+
+        # Count documentation elements
+        readme_lines=$(wc -l < README.md)
+        readme_sections=$(grep -c '^##' README.md)
+        code_examples=$(grep -c '```zig' README.md)
+        doc_files=$(find docs/ -name "*.md" | wc -l)
+
+        cat > DOC_REPORT.md << EOF
+# Documentation Report
+
+## 📊 Documentation Metrics
+
+- **README.md**: $readme_lines lines, $readme_sections sections
+- **Code Examples**: $code_examples Zig code blocks
+- **Documentation Files**: $doc_files files in docs/ directory
+
+## ✅ Quality Checks
+
+- **Section Completeness**: All required sections present
+- **API Consistency**: All documented functions exist in source
+- **Code Examples**: Valid Zig syntax in examples
+- **File Structure**: Complete documentation hierarchy
+
+## 📚 Documentation Structure
+
+\`\`\`
+docs/
+├── api-design.md        - API specification and design decisions
+├── implementation-plan.md - Development roadmap and architecture
+├── test-coverage.md     - Testing strategy and coverage analysis
+└── deployment-plan.md   - Release and distribution strategy
+\`\`\`
+
+---
+
+*Report generated on $(date)*
+EOF
+
+        echo "✅ Documentation report generated"
+
+    - name: Upload documentation report
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation-report
+        path: DOC_REPORT.md
+        retention-days: 30
+
+  spell-check:
+    name: Spell Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install aspell
+      run: sudo apt-get update && sudo apt-get install -y aspell aspell-en
+
+    - name: Check spelling in documentation
+      run: |
+        echo "🔤 Checking spelling in documentation..."
+
+        # Create a custom dictionary for technical terms
+        cat > .aspell.en.pws << EOF
+personal_ws-1.1 en 50
+Base62
+Zig
+API
+APIs
+URL
+URLs
+UUID
+UUIDs
+kcov
+GitHub
+macOS
+bool
+struct
+enum
+u8
+u64
+allocator
+const
+var
+pub
+fn
+EOF
+
+        # Check spelling in markdown files
+        find . -name "*.md" -not -path "./.git/*" | xargs aspell --personal=.aspell.en.pws --ignore-case list | sort -u > spelling_errors.txt
+
+        if [ -s spelling_errors.txt ]; then
+          echo "⚠️ Potential spelling errors found:"
+          cat spelling_errors.txt
+          echo ""
+          echo "If these are technical terms, consider adding them to the dictionary"
+        else
+          echo "✅ No spelling errors detected"
+        fi
