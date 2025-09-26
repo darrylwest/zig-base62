@@ -1,8 +1,8 @@
 # Zig Base62 Encode/Decode
 
-[![CI](https://github.com/darrylwest/zig-base62/workflows/CI/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
-[![Security](https://github.com/darrylwest/zig-base62/workflows/Security/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
-[![Documentation](https://github.com/darrylwest/zig-base62/workflows/Documentation/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
+[![CI](https://github.com/darrylwest/zig-base62/workflows/CI/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
+[![Security](https://github.com/darrylwest/zig-base62/workflows/Security/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
+[![Documentation](https://github.com/darrylwest/zig-base62/workflows/Documentation/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
 
 A high-performance Base62 encoding/decoding library written in Zig. Perfect for generating short, URL-safe identifiers and keys.
 
@@ -143,6 +143,7 @@ ls examples/
 ### Example Output
 
 The simple example demonstrates basic functionality:
+
 ```
 Base62 Library Demo
 ===================
@@ -202,6 +203,7 @@ The library includes comprehensive test coverage:
 - **Configuration Testing** - Custom alphabet validation
 
 View detailed coverage reports:
+
 ```bash
 zig build coverage  # Generates coverage/index.html
 ```
@@ -249,4 +251,4 @@ Complete documentation available in the `docs/` directory:
 
 Apache 2.0
 
-###### dpw | 2025.09.27
+###### dpw | 2025.09.26
