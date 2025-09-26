@@ -123,6 +123,52 @@ zig build coverage
 zig build test-coverage
 ```
 
+## Running Examples
+
+The library includes comprehensive examples demonstrating all features:
+
+```bash
+# Run all examples (recommended)
+./run-examples.sh
+
+# Or get example instructions
+zig build example
+
+# View example files
+ls examples/
+# simple.zig  - Basic encoding/decoding demonstration
+# usage.zig   - Comprehensive feature showcase
+```
+
+### Example Output
+
+The simple example demonstrates basic functionality:
+```
+Base62 Library Demo
+===================
+
+Original: 12345
+Encoded:  '3D7'
+Decoded:  12345
+Match:    true
+
+Edge Case Tests:
+  0 -> '0' -> 0 (✓)
+  1 -> '1' -> 1 (✓)
+  61 -> 'z' -> 61 (✓)
+  62 -> '10' -> 62 (✓)
+  3844 -> '100' -> 3844 (✓)
+  1000000 -> '4C92' -> 1000000 (✓)
+
+Base62 library working correctly!
+```
+
+The usage example showcases:
+- Integer encoding with various values
+- Custom alphabet configuration
+- Byte array encoding
+- Random key generation
+
 ## Use Cases
 
 - **URL shorteners** - Generate short, unique identifiers
@@ -203,4 +249,4 @@ Complete documentation available in the `docs/` directory:
 
 Apache 2.0
 
-###### dpw | 2025.09.25
+###### dpw | 2025.09.26
