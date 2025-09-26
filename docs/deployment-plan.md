@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zig-version: ['0.15.0', 'master']
+        zig-version: ['0.15.1', 'master']
     steps:
       - uses: actions/checkout@v3
       - name: Setup Zig

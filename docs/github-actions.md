@@ -11,7 +11,7 @@ The project includes four comprehensive GitHub Actions workflows that ensure cod
 
 **Jobs**:
 - **Test and Coverage** - Multi-version Zig testing
-  - Tests on Zig 0.15.0, 0.15.1, and master
+  - Tests on Zig 0.15.1 and master
   - Code formatting validation
   - Comprehensive test suite execution
   - Coverage analysis with kcov
@@ -78,7 +78,7 @@ The project includes four comprehensive GitHub Actions workflows that ensure cod
 
 | Workflow | Zig Versions | Platforms | Frequency |
 |----------|-------------|-----------|-----------|
-| CI | 0.15.0, 0.15.1, master | Ubuntu, macOS, Windows | Every push/PR |
+| CI | 0.15.1, master | Ubuntu, macOS, Windows | Every push/PR |
 | Release | 0.15.1 | Ubuntu | On version tags |
 | Security | 0.15.1 | Ubuntu | Weekly + push/PR |
 | Documentation | - | Ubuntu | Every push/PR |

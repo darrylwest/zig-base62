@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        zig-version: ['0.15.0', '0.15.1']
+        zig-version: ['0.15.1']
 
     steps:
     - name: Checkout code
@@ -194,7 +194,7 @@ jobs:
         echo "- **Function Coverage**: 100% (14/14)" >> release-summary.md
         echo "- **Test Cases**: 12 comprehensive tests" >> release-summary.md
         echo "- **Cross-platform**: ✅ Linux, macOS, Windows" >> release-summary.md
-        echo "- **Zig Compatibility**: 0.15.0, 0.15.1, master" >> release-summary.md
+        echo "- **Zig Compatibility**: 0.15.1+" >> release-summary.md
         echo "- **Security**: ✅ No secrets or vulnerabilities detected" >> release-summary.md
         echo "- **Documentation**: ✅ Complete API documentation" >> release-summary.md
         echo "" >> release-summary.md
