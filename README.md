@@ -1,8 +1,8 @@
 # Zig Base62 Encode/Decode
 
-[![CI](https://github.com/darrylwest/zig-base62/workflows/CI/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
-[![Security](https://github.com/darrylwest/zig-base62/workflows/Security/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
-[![Documentation](https://github.com/darrylwest/zig-base62/workflows/Documentation/badge.svg)](https://github.com/USERNAME/zig-base62/actions)
+[![CI](https://github.com/darrylwest/zig-base62/workflows/CI/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
+[![Security](https://github.com/darrylwest/zig-base62/workflows/Security/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
+[![Documentation](https://github.com/darrylwest/zig-base62/workflows/Documentation/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
 
 A high-performance Base62 encoding/decoding library written in Zig. Perfect for generating short, URL-safe identifiers and keys.
 
