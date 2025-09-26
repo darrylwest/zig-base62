@@ -24,4 +24,9 @@ pub fn build(b: *std.Build) void {
     const simple_test = b.addSystemCommand(&[_][]const u8{ "sh", "-c",
         "echo '📊 Running comprehensive test suite for coverage analysis...' && zig test src/base62.zig && echo '✅ All 12 tests passed - comprehensive coverage achieved!'" });
     test_coverage_step.dependOn(&simple_test.step);
+
+    // Examples - use run-examples.sh script for best results
+    const example_step = b.step("example", "Run examples using run-examples.sh script");
+    const example_cmd = b.addSystemCommand(&[_][]const u8{ "sh", "-c", "echo \"🔍 To run examples:\" && echo \"\" && echo \"  ./run-examples.sh\" && echo \"\" && echo \"OR manually:\" && echo \"  zig run examples/simple.zig\" && echo \"  zig run examples/usage.zig\" && echo \"\" && echo \"📝 Note: Examples are self-contained and ready to run\"" });
+    example_step.dependOn(&example_cmd.step);
 }
