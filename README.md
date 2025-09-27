@@ -4,6 +4,15 @@
 [![Security](https://github.com/darrylwest/zig-base62/workflows/Security/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
 [![Documentation](https://github.com/darrylwest/zig-base62/workflows/Documentation/badge.svg)](https://github.com/darrylwest/zig-base62/actions)
 
+```
+ ______         ____                  __  ____  
+|__  (_) __ _  | __ )  __ _ ___  ___ / /_|___ \ 
+  / /| |/ _` | |  _ \ / _` / __|/ _ \ '_ \ __) |
+ / /_| | (_| | | |_) | (_| \__ \  __/ (_) / __/ 
+/____|_|\__, | |____/ \__,_|___/\___|\___/_____|
+        |___/                                   
+```
+
 A high-performance Base62 encoding/decoding library written in Zig. Perfect for generating short, URL-safe identifiers and keys.
 
 ## Features
@@ -252,3 +261,4 @@ Complete documentation available in the `docs/` directory:
 Apache 2.0
 
 ###### dpw | 2025.09.28
+
