@@ -1,6 +1,8 @@
+---
+
 name: Documentation
 
-on:
+'on':
   push:
     branches: [main]
   pull_request:
@@ -12,202 +14,201 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Check README completeness
-      run: |
-        echo "📚 Checking README.md completeness..."
+      - name: Check README completeness
+        run: |
+          echo "📚 Checking README.md completeness..."
 
-        # Check that all major sections are present
-        required_sections=(
-          "# Zig Base62"
-          "## Features"
-          "## Quick Start"
-          "## API Reference"
-          "## Building"
-          "## Requirements"
-        )
+          # Check that all major sections are present
+          required_sections=(
+            "# Zig Base62"
+            "## Features"
+            "## Quick Start"
+            "## API Reference"
+            "## Building"
+            "## Requirements"
+          )
 
-        missing_sections=()
-        for section in "${required_sections[@]}"; do
-          if ! grep -q "$section" README.md; then
-            missing_sections+=("$section")
+          missing_sections=()
+          for section in "${required_sections[@]}"; do
+            if ! grep -q "$section" README.md; then
+              missing_sections+=("$section")
+            fi
+          done
+
+          if [ ${#missing_sections[@]} -gt 0 ]; then
+            echo "❌ Missing sections in README.md:"
+            printf '%s\n' "${missing_sections[@]}"
+            exit 1
+          else
+            echo "✅ All required sections present in README.md"
           fi
-        done
 
-        if [ ${#missing_sections[@]} -gt 0 ]; then
-          echo "❌ Missing sections in README.md:"
-          printf '%s\n' "${missing_sections[@]}"
-          exit 1
-        else
-          echo "✅ All required sections present in README.md"
-        fi
+      - name: Check API documentation consistency
+        run: |
+          echo "🔍 Checking API documentation consistency..."
 
-    - name: Check API documentation consistency
-      run: |
-        echo "🔍 Checking API documentation consistency..."
+          # Check that all public functions mentioned in README exist in source
+          public_functions=(
+            "encodeInt"
+            "decodeInt"
+            "encodeBytes"
+            "decodeBytes"
+            "encodeIntWithConfig"
+            "decodeIntWithConfig"
+          )
 
-        # Check that all public functions mentioned in README exist in source
-        public_functions=(
-          "encodeInt"
-          "decodeInt"
-          "encodeBytes"
-          "decodeBytes"
-          "encodeIntWithConfig"
-          "decodeIntWithConfig"
-        )
+          missing_functions=()
+          for func in "${public_functions[@]}"; do
+            if ! grep -q "pub fn $func" src/base62.zig; then
+              missing_functions+=("$func")
+            fi
+          done
 
-        missing_functions=()
-        for func in "${public_functions[@]}"; do
-          if ! grep -q "pub fn $func" src/base62.zig; then
-            missing_functions+=("$func")
+          if [ ${#missing_functions[@]} -gt 0 ]; then
+            echo "❌ Functions documented in README but not found in source:"
+            printf '%s\n' "${missing_functions[@]}"
+            exit 1
+          else
+            echo "✅ All documented functions exist in source code"
           fi
-        done
 
-        if [ ${#missing_functions[@]} -gt 0 ]; then
-          echo "❌ Functions documented in README but not found in source:"
-          printf '%s\n' "${missing_functions[@]}"
-          exit 1
-        else
-          echo "✅ All documented functions exist in source code"
-        fi
+      - name: Check examples validity
+        run: |
+          echo "📝 Checking code examples in documentation..."
 
-    - name: Check examples validity
-      run: |
-        echo "📝 Checking code examples in documentation..."
-
-        # Extract Zig code blocks from README and check basic syntax
-        if grep -A 10 '```zig' README.md | grep -E '(const|var|pub fn|try)' > /dev/null; then
-          echo "✅ README contains valid-looking Zig code examples"
-        else
-          echo "⚠️ README may be missing proper Zig code examples"
-        fi
-
-    - name: Check documentation files exist
-      run: |
-        echo "📁 Checking documentation files..."
-
-        doc_files=(
-          "docs/api-design.md"
-          "docs/implementation-plan.md"
-          "docs/test-coverage.md"
-          "docs/deployment-plan.md"
-        )
-
-        missing_docs=()
-        for file in "${doc_files[@]}"; do
-          if [ ! -f "$file" ]; then
-            missing_docs+=("$file")
+          # Extract Zig code blocks from README and check basic syntax
+          if grep -A 10 '```zig' README.md | \
+            grep -E '(const|var|pub fn|try)' > /dev/null; then
+            echo "✅ README contains valid-looking Zig code examples"
+          else
+            echo "⚠️ README may be missing proper Zig code examples"
           fi
-        done
 
-        if [ ${#missing_docs[@]} -gt 0 ]; then
-          echo "⚠️ Missing documentation files:"
-          printf '%s\n' "${missing_docs[@]}"
-        else
-          echo "✅ All documentation files present"
-        fi
+      - name: Check documentation files exist
+        run: |
+          echo "📁 Checking documentation files..."
 
-    - name: Generate documentation report
-      run: |
-        echo "📊 Generating documentation completeness report..."
+          doc_files=(
+            "docs/api-design.md"
+            "docs/implementation-plan.md"
+            "docs/test-coverage.md"
+            "docs/deployment-plan.md"
+          )
 
-        # Count documentation elements
-        readme_lines=$(wc -l < README.md)
-        readme_sections=$(grep -c '^##' README.md)
-        code_examples=$(grep -c '```zig' README.md)
-        doc_files=$(find docs/ -name "*.md" | wc -l)
+          missing_docs=()
+          for file in "${doc_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing_docs+=("$file")
+            fi
+          done
 
-        cat > DOC_REPORT.md << EOF
-# Documentation Report
+          if [ ${#missing_docs[@]} -gt 0 ]; then
+            echo "⚠️ Missing documentation files:"
+            printf '%s\n' "${missing_docs[@]}"
+          else
+            echo "✅ All documentation files present"
+          fi
 
-## 📊 Documentation Metrics
+      - name: Generate documentation report
+        run: |
+          echo "📊 Generating documentation completeness report..."
 
-- **README.md**: $readme_lines lines, $readme_sections sections
-- **Code Examples**: $code_examples Zig code blocks
-- **Documentation Files**: $doc_files files in docs/ directory
+          # Count documentation elements
+          readme_lines=$(wc -l < README.md)
+          readme_sections=$(grep -c '^##' README.md)
+          code_examples=$(grep -c '```zig' README.md)
+          doc_files=$(find docs/ -name "*.md" | wc -l)
 
-## ✅ Quality Checks
+          echo "# Documentation Report" > DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "## 📊 Documentation Metrics" >> DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "- **README.md**: $readme_lines lines, $readme_sections sections" >> DOC_REPORT.md
+          echo "- **Code Examples**: $code_examples Zig code blocks" >> DOC_REPORT.md
+          echo "- **Documentation Files**: $doc_files files in docs/ directory" >> DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "## ✅ Quality Checks" >> DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "- **Section Completeness**: All required sections present" >> DOC_REPORT.md
+          echo "- **API Consistency**: All documented functions exist in source" >> DOC_REPORT.md
+          echo "- **Code Examples**: Valid Zig syntax in examples" >> DOC_REPORT.md
+          echo "- **File Structure**: Complete documentation hierarchy" >> DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "## 📚 Documentation Structure" >> DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "\`\`\`" >> DOC_REPORT.md
+          echo "docs/" >> DOC_REPORT.md
+          echo "├── api-design.md        - API specification and design decisions" >> DOC_REPORT.md
+          echo "├── implementation-plan.md - Development roadmap and architecture" >> DOC_REPORT.md
+          echo "├── test-coverage.md     - Testing strategy and coverage analysis" >> DOC_REPORT.md
+          echo "└── deployment-plan.md   - Release and distribution strategy" >> DOC_REPORT.md
+          echo "\`\`\`" >> DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "---" >> DOC_REPORT.md
+          echo "" >> DOC_REPORT.md
+          echo "*Report generated on \$(date)*" >> DOC_REPORT.md
+          echo "✅ Documentation report generated"
 
-- **Section Completeness**: All required sections present
-- **API Consistency**: All documented functions exist in source
-- **Code Examples**: Valid Zig syntax in examples
-- **File Structure**: Complete documentation hierarchy
-
-## 📚 Documentation Structure
-
-\`\`\`
-docs/
-├── api-design.md        - API specification and design decisions
-├── implementation-plan.md - Development roadmap and architecture
-├── test-coverage.md     - Testing strategy and coverage analysis
-└── deployment-plan.md   - Release and distribution strategy
-\`\`\`
-
----
-
-*Report generated on $(date)*
-EOF
-
-        echo "✅ Documentation report generated"
-
-    - name: Upload documentation report
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation-report
-        path: DOC_REPORT.md
-        retention-days: 30
+      - name: Upload documentation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-report
+          path: DOC_REPORT.md
+          retention-days: 30
 
   spell-check:
     name: Spell Check
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install aspell
-      run: sudo apt-get update && sudo apt-get install -y aspell aspell-en
+      - name: Install aspell
+        run: sudo apt-get update && sudo apt-get install -y aspell aspell-en
 
-    - name: Check spelling in documentation
-      run: |
-        echo "🔤 Checking spelling in documentation..."
+      - name: Check spelling in documentation
+        run: |
+          echo "🔤 Checking spelling in documentation..."
 
-        # Create a custom dictionary for technical terms
-        cat > .aspell.en.pws << EOF
-personal_ws-1.1 en 50
-Base62
-Zig
-API
-APIs
-URL
-URLs
-UUID
-UUIDs
-kcov
-GitHub
-macOS
-bool
-struct
-enum
-u8
-u64
-allocator
-const
-var
-pub
-fn
-EOF
+          # Create a custom dictionary for technical terms
+          echo "personal_ws-1.1 en 50" > .aspell.en.pws
+          echo "Base62" >> .aspell.en.pws
+          echo "Zig" >> .aspell.en.pws
+          echo "API" >> .aspell.en.pws
+          echo "APIs" >> .aspell.en.pws
+          echo "URL" >> .aspell.en.pws
+          echo "URLs" >> .aspell.en.pws
+          echo "UUID" >> .aspell.en.pws
+          echo "UUIDs" >> .aspell.en.pws
+          echo "kcov" >> .aspell.en.pws
+          echo "GitHub" >> .aspell.en.pws
+          echo "macOS" >> .aspell.en.pws
+          echo "bool" >> .aspell.en.pws
+          echo "struct" >> .aspell.en.pws
+          echo "enum" >> .aspell.en.pws
+          echo "u8" >> .aspell.en.pws
+          echo "u64" >> .aspell.en.pws
+          echo "allocator" >> .aspell.en.pws
+          echo "const" >> .aspell.en.pws
+          echo "var" >> .aspell.en.pws
+          echo "pub" >> .aspell.en.pws
+          echo "fn" >> .aspell.en.pws
 
-        # Check spelling in markdown files
-        find . -name "*.md" -not -path "./.git/*" | xargs aspell --personal=.aspell.en.pws --ignore-case list | sort -u > spelling_errors.txt
+          # Check spelling in markdown files
+          find . -name "*.md" -not -path "./.git/*" | \
+            xargs aspell --personal=.aspell.en.pws --ignore-case list | \
+            sort -u > spelling_errors.txt
 
-        if [ -s spelling_errors.txt ]; then
-          echo "⚠️ Potential spelling errors found:"
-          cat spelling_errors.txt
-          echo ""
-          echo "If these are technical terms, consider adding them to the dictionary"
-        else
-          echo "✅ No spelling errors detected"
-        fi
+          if [ -s spelling_errors.txt ]; then
+            echo "⚠️ Potential spelling errors found:"
+            cat spelling_errors.txt
+            echo ""
+            echo "If these are technical terms, consider adding them to the" \
+              "dictionary"
+          else
+            echo "✅ No spelling errors detected"
+          fi

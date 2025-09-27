@@ -1,6 +1,8 @@
+---
+
 name: Security
 
-on:
+'on':
   schedule:
     # Run weekly security scans
     - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
@@ -15,235 +17,240 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Run secret detection
-      run: |
-        echo "🔍 Scanning for secrets and sensitive information..."
+      - name: Run secret detection
+        run: |
+          echo "🔍 Scanning for secrets and sensitive information..."
 
-        # Check for various secret patterns
-        secret_patterns=(
-          "password"
-          "secret"
-          "key.*="
-          "token"
-          "api[_-]?key"
-          "auth[_-]?token"
-          "private[_-]?key"
-          "-----BEGIN.*PRIVATE KEY-----"
-        )
+          # Check for various secret patterns
+          secret_patterns=(
+            "password"
+            "secret"
+            "key.*="
+            "token"
+            "api[_-]?key"
+            "auth[_-]?token"
+            "private[_-]?key"
+            "-----BEGIN.*PRIVATE KEY-----"
+          )
 
-        found_secrets=false
-        for pattern in "${secret_patterns[@]}"; do
-          if grep -r -i -E "$pattern" --include="*.zig" --include="*.md" --exclude-dir=.git .; then
-            echo "⚠️ Potential secret found matching pattern: $pattern"
-            found_secrets=true
+          found_secrets=false
+          for pattern in "${secret_patterns[@]}"; do
+            if grep -r -i -E "$pattern" --include="*.zig" \
+            --include="*.md" --exclude-dir=.git .; then
+              echo "⚠️ Potential secret found matching pattern: $pattern"
+              found_secrets=true
+            fi
+          done
+
+          if [ "$found_secrets" = true ]; then
+            echo "❌ Secrets detected - please review and remove" \
+              "sensitive information"
+            exit 1
+          else
+            echo "✅ No secrets detected"
           fi
-        done
 
-        if [ "$found_secrets" = true ]; then
-          echo "❌ Secrets detected - please review and remove sensitive information"
-          exit 1
-        else
-          echo "✅ No secrets detected"
-        fi
+      - name: Check file permissions
+        run: |
+          echo "🔒 Checking file permissions..."
 
-    - name: Check file permissions
-      run: |
-        echo "🔒 Checking file permissions..."
+          # Check for executable files that shouldn't be
+          suspicious_executables=$(find . -type f -executable \
+            ! -path "./.git/*" ! -name "*.sh" ! -path "./.github/*")
+          if [ ! -z "$suspicious_executables" ]; then
+            echo "⚠️ Unexpected executable files found:"
+            echo "$suspicious_executables"
+            echo "Please review file permissions"
+            exit 1
+          else
+            echo "✅ File permissions look good"
+          fi
 
-        # Check for executable files that shouldn't be
-        suspicious_executables=$(find . -type f -executable ! -path "./.git/*" ! -name "*.sh" ! -path "./.github/*")
-        if [ ! -z "$suspicious_executables" ]; then
-          echo "⚠️ Unexpected executable files found:"
-          echo "$suspicious_executables"
-          echo "Please review file permissions"
-          exit 1
-        else
-          echo "✅ File permissions look good"
-        fi
+      - name: Validate dependencies
+        run: |
+          echo "📦 Validating dependencies..."
 
-    - name: Validate dependencies
-      run: |
-        echo "📦 Validating dependencies..."
+          # Since we have no external dependencies, just verify build.zig
+          if grep -q "dependency" build.zig; then
+            echo "⚠️ External dependencies found in build.zig - manual review required"
+            grep "dependency" build.zig
+          else
+            echo "✅ No external dependencies confirmed"
+          fi
 
-        # Since we have no external dependencies, just verify build.zig
-        if grep -q "dependency" build.zig; then
-          echo "⚠️ External dependencies found in build.zig - manual review required"
-          grep "dependency" build.zig
-        else
-          echo "✅ No external dependencies confirmed"
-        fi
+      - name: Check for hardcoded URLs/IPs
+        run: |
+          echo "🌐 Checking for hardcoded URLs and IP addresses..."
 
-    - name: Check for hardcoded URLs/IPs
-      run: |
-        echo "🌐 Checking for hardcoded URLs and IP addresses..."
-
-        # Look for URLs and IP addresses
-        if grep -r -E "(https?://|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})" --include="*.zig" src/; then
-          echo "⚠️ Hardcoded URLs or IP addresses found - please review"
-          exit 1
-        else
-          echo "✅ No hardcoded URLs or IP addresses found"
-        fi
+          # Look for URLs and IP addresses
+          if grep -r -E \
+            "(https?://|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})" \
+            --include="*.zig" src/; then
+            echo "⚠️ Hardcoded URLs or IP addresses found - please review"
+            exit 1
+          else
+            echo "✅ No hardcoded URLs or IP addresses found"
+          fi
 
   code-quality:
     name: Code Quality Analysis
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Zig
-      uses: goto-bus-stop/setup-zig@v2
-      with:
-        version: '0.15.1'
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: '0.15.1'
 
-    - name: Check code formatting
-      run: |
-        echo "💅 Checking code formatting..."
-        if ! zig fmt --check src/; then
-          echo "❌ Code formatting issues found"
-          echo "Run 'zig fmt src/' to fix formatting"
-          exit 1
-        else
-          echo "✅ Code formatting is correct"
-        fi
+      - name: Check code formatting
+        run: |
+          echo "💅 Checking code formatting..."
+          if ! zig fmt --check src/; then
+            echo "❌ Code formatting issues found"
+            echo "Run 'zig fmt src/' to fix formatting"
+            exit 1
+          else
+            echo "✅ Code formatting is correct"
+          fi
 
-    - name: Static analysis
-      run: |
-        echo "🔍 Running static analysis..."
+      - name: Static analysis
+        run: |
+          echo "🔍 Running static analysis..."
 
-        # Check for common anti-patterns
-        echo "Checking for potential issues..."
+          # Check for common anti-patterns
+          echo "Checking for potential issues..."
 
-        # Check for TODO/FIXME comments
-        todos=$(grep -r -i "todo\|fixme\|hack\|xxx" --include="*.zig" src/ || true)
-        if [ ! -z "$todos" ]; then
-          echo "ℹ️ TODO/FIXME comments found (informational):"
-          echo "$todos"
-        fi
+          # Check for TODO/FIXME comments
+          todos=$(grep -r -i "todo\|fixme\|hack\|xxx" \
+            --include="*.zig" src/ || true)
+          if [ ! -z "$todos" ]; then
+            echo "ℹ️ TODO/FIXME comments found (informational):"
+            echo "$todos"
+          fi
 
-        # Check for panic calls (should be minimal)
-        panics=$(grep -r "panic\|unreachable" --include="*.zig" src/ || true)
-        if [ ! -z "$panics" ]; then
-          echo "⚠️ panic/unreachable calls found - please review:"
-          echo "$panics"
-        fi
+          # Check for panic calls (should be minimal)
+          panics=$(grep -r "panic\|unreachable" --include="*.zig" src/ || true)
+          if [ ! -z "$panics" ]; then
+            echo "⚠️ panic/unreachable calls found - please review:"
+            echo "$panics"
+          fi
 
-        echo "✅ Static analysis complete"
+          echo "✅ Static analysis complete"
 
-    - name: Memory safety check
-      run: |
-        echo "🛡️ Checking memory safety patterns..."
+      - name: Memory safety check
+        run: |
+          echo "🛡️ Checking memory safety patterns..."
 
-        # Look for manual memory management that might be unsafe
-        unsafe_patterns=$(grep -r -E "(malloc|free|ptr.*=|@ptrCast)" --include="*.zig" src/ || true)
-        if [ ! -z "$unsafe_patterns" ]; then
-          echo "ℹ️ Manual memory management found (review for safety):"
-          echo "$unsafe_patterns"
-        else
-          echo "✅ No unsafe memory patterns detected"
-        fi
+          # Look for manual memory management that might be unsafe
+          unsafe_patterns=$(grep -r -E \
+            "(malloc|free|ptr.*=|@ptrCast)" --include="*.zig" src/ || true)
+          if [ ! -z "$unsafe_patterns" ]; then
+            echo "ℹ️ Manual memory management found (review for safety):"
+            echo "$unsafe_patterns"
+          else
+            echo "✅ No unsafe memory patterns detected"
+          fi
 
   vulnerability-assessment:
     name: Vulnerability Assessment
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Zig
-      uses: goto-bus-stop/setup-zig@v2
-      with:
-        version: '0.15.1'
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: '0.15.1'
 
-    - name: Test error handling robustness
-      run: |
-        echo "🧪 Testing error handling robustness..."
+      - name: Test error handling robustness
+        run: |
+          echo "🧪 Testing error handling robustness..."
 
-        # Run tests to ensure error paths work correctly
-        zig test src/base62.zig
+          # Run tests to ensure error paths work correctly
+          zig test src/base62.zig
 
-        echo "✅ Error handling tests passed"
+          echo "✅ Error handling tests passed"
 
-    - name: Integer overflow testing
-      run: |
-        echo "🔢 Testing integer overflow protection..."
+      - name: Integer overflow testing
+        run: |
+          echo "🔢 Testing integer overflow protection..."
 
-        # Our tests include overflow detection, so this verifies it works
-        if ! zig test src/base62.zig | grep -q "overflow detection.*OK"; then
-          echo "❌ Overflow detection test not found or failing"
-          exit 1
-        else
-          echo "✅ Integer overflow protection verified"
-        fi
+          # Our tests include overflow detection, so this verifies it works
+          if ! zig test src/base62.zig | \
+            grep -q "overflow detection.*OK"; then
+            echo "❌ Overflow detection test not found or failing"
+            exit 1
+          else
+            echo "✅ Integer overflow protection verified"
+          fi
 
-    - name: Input validation testing
-      run: |
-        echo "✏️ Testing input validation..."
+      - name: Input validation testing
+        run: |
+          echo "✏️ Testing input validation..."
 
-        # Verify our error condition tests are working
-        if ! zig test src/base62.zig | grep -q "error conditions.*OK"; then
-          echo "❌ Error condition tests not found or failing"
-          exit 1
-        else
-          echo "✅ Input validation tests verified"
-        fi
+          # Verify our error condition tests are working
+          if ! zig test src/base62.zig | \
+            grep -q "error conditions.*OK"; then
+            echo "❌ Error condition tests not found or failing"
+            exit 1
+          else
+            echo "✅ Input validation tests verified"
+          fi
 
-    - name: Generate security report
-      run: |
-        echo "📋 Generating security assessment report..."
+      - name: Generate security report
+        run: |
+          echo "📋 Generating security assessment report..."
+          echo "# Security Assessment Report" > SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "## 🛡️ Security Status: SECURE" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "### ✅ Passed Security Checks" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "- **Secret Detection**: No secrets or sensitive information found" >> SECURITY_REPORT.md
+          echo "- **File Permissions**: All files have appropriate permissions" >> SECURITY_REPORT.md
+          echo "- **Dependencies**: Zero external dependencies confirmed" >> SECURITY_REPORT.md
+          echo "- **Code Quality**: Proper formatting and structure" >> SECURITY_REPORT.md
+          echo "- **Memory Safety**: Safe memory management patterns" >> SECURITY_REPORT.md
+          echo "- **Input Validation**: Comprehensive input validation and error handling" >> SECURITY_REPORT.md
+          echo "- **Integer Safety**: Overflow protection implemented and tested" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "### 🔒 Security Features" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "- **Input Validation**: All user inputs are validated" >> SECURITY_REPORT.md
+          echo "- **Error Handling**: Robust error handling prevents crashes" >> SECURITY_REPORT.md
+          echo "- **Memory Safety**: Uses Zig's memory safety features" >> SECURITY_REPORT.md
+          echo "- **Overflow Protection**: Integer overflow detection and prevention" >> SECURITY_REPORT.md
+          echo "- **No External Dependencies**: Eliminates supply chain risks" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "### 📊 Test Coverage" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "- **Error Path Coverage**: 100% - all error conditions tested" >> SECURITY_REPORT.md
+          echo "- **Edge Case Testing**: Comprehensive boundary value testing" >> SECURITY_REPORT.md
+          echo "- **Overflow Testing**: Specific tests for integer overflow scenarios" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "### 🎯 Recommendations" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "- Continue regular security scans" >> SECURITY_REPORT.md
+          echo "- Maintain comprehensive test coverage" >> SECURITY_REPORT.md
+          echo "- Review any future dependency additions carefully" >> SECURITY_REPORT.md
+          echo "- Keep Zig version updated for latest security improvements" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "---" >> SECURITY_REPORT.md
+          echo "" >> SECURITY_REPORT.md
+          echo "*Report generated on \$(date)*" >> SECURITY_REPORT.md
+          echo "✅ Security report generated"
 
-        cat > SECURITY_REPORT.md << EOF
-# Security Assessment Report
-
-## 🛡️ Security Status: SECURE
-
-### ✅ Passed Security Checks
-
-- **Secret Detection**: No secrets or sensitive information found
-- **File Permissions**: All files have appropriate permissions
-- **Dependencies**: Zero external dependencies confirmed
-- **Code Quality**: Proper formatting and structure
-- **Memory Safety**: Safe memory management patterns
-- **Input Validation**: Comprehensive input validation and error handling
-- **Integer Safety**: Overflow protection implemented and tested
-
-### 🔒 Security Features
-
-- **Input Validation**: All user inputs are validated
-- **Error Handling**: Robust error handling prevents crashes
-- **Memory Safety**: Uses Zig's memory safety features
-- **Overflow Protection**: Integer overflow detection and prevention
-- **No External Dependencies**: Eliminates supply chain risks
-
-### 📊 Test Coverage
-
-- **Error Path Coverage**: 100% - all error conditions tested
-- **Edge Case Testing**: Comprehensive boundary value testing
-- **Overflow Testing**: Specific tests for integer overflow scenarios
-
-### 🎯 Recommendations
-
-- Continue regular security scans
-- Maintain comprehensive test coverage
-- Review any future dependency additions carefully
-- Keep Zig version updated for latest security improvements
-
----
-
-*Report generated on $(date)*
-EOF
-
-        echo "✅ Security report generated"
-
-    - name: Upload security report
-      uses: actions/upload-artifact@v4
-      with:
-        name: security-assessment-report
-        path: SECURITY_REPORT.md
-        retention-days: 90
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-assessment-report
+          path: SECURITY_REPORT.md
+          retention-days: 90

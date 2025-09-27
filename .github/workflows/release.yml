@@ -1,6 +1,8 @@
+---
+
 name: Release
 
-on:
+'on':
   push:
     tags:
       - 'v*.*.*'
@@ -11,126 +13,144 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Zig
-      uses: goto-bus-stop/setup-zig@v2
-      with:
-        version: '0.15.1'
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: '0.15.1'
 
-    - name: Run full test suite
-      run: |
-        echo "🧪 Running comprehensive test suite for release..."
-        zig test src/base62.zig
-        zig build test
+      - name: Run full test suite
+        run: |
+          echo "🧪 Running comprehensive test suite for release..."
+          zig test src/base62.zig
+          zig build test
 
-    - name: Generate release artifacts
-      run: |
-        echo "📦 Generating release artifacts..."
+      - name: Generate release artifacts
+        run: |
+          echo "📦 Generating release artifacts..."
 
-        # Create release directory
-        mkdir -p release/base62-${GITHUB_REF#refs/tags/}
+          # Create release directory
+          mkdir -p release/base62-${GITHUB_REF#refs/tags/}
 
-        # Copy source files
-        cp -r src/ release/base62-${GITHUB_REF#refs/tags/}/
-        cp build.zig release/base62-${GITHUB_REF#refs/tags/}/
-        cp README.md release/base62-${GITHUB_REF#refs/tags/}/
-        cp -r docs/ release/base62-${GITHUB_REF#refs/tags/}/
-        cp -r examples/ release/base62-${GITHUB_REF#refs/tags/}/
-        cp -r scripts/ release/base62-${GITHUB_REF#refs/tags/}/
+          # Copy source files
+          cp -r src/ \
+            release/base62-${GITHUB_REF#refs/tags/}/
+          cp build.zig \
+            release/base62-${GITHUB_REF#refs/tags/}/
+          cp README.md \
+            release/base62-${GITHUB_REF#refs/tags/}/
+          cp -r docs/ \
+            release/base62-${GITHUB_REF#refs/tags/}/
+          cp -r examples/ \
+            release/base62-${GITHUB_REF#refs/tags/}/
+          cp -r scripts/ \
+            release/base62-${GITHUB_REF#refs/tags/}/
 
-        # Create archive
-        cd release
-        tar -czf base62-${GITHUB_REF#refs/tags/}.tar.gz base62-${GITHUB_REF#refs/tags/}/
-        zip -r base62-${GITHUB_REF#refs/tags/}.zip base62-${GITHUB_REF#refs/tags/}/
+          # Create archive
+          cd release
+          tar -czf base62-${GITHUB_REF#refs/tags/}.tar.gz \
+            base62-${GITHUB_REF#refs/tags/}/
+          zip -r base62-${GITHUB_REF#refs/tags/}.zip \
+            base62-${GITHUB_REF#refs/tags/}/
 
-    - name: Install coverage tools and generate coverage
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y kcov
-        zig build coverage
+      - name: Install coverage tools and generate coverage
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y kcov
+          zig build coverage
 
-    - name: Generate release notes
-      run: |
-        echo "# Base62 Library ${GITHUB_REF#refs/tags/}" > RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "A high-performance Base62 encoding/decoding library written in Zig." >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "## ✨ Features" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "- **Fast integer encoding/decoding** using optimized algorithms" >> RELEASE_NOTES.md
-        echo "- **Byte array support** for arbitrary data encoding" >> RELEASE_NOTES.md
-        echo "- **Custom alphabet support** for different character sets" >> RELEASE_NOTES.md
-        echo "- **Memory safe** with proper error handling" >> RELEASE_NOTES.md
-        echo "- **Zero dependencies** - uses only Zig standard library" >> RELEASE_NOTES.md
-        echo "- **Comprehensive tests** with 100% function coverage (12 test cases)" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "## 📊 Quality Metrics" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "- **Function Coverage**: 100% (14/14 functions)" >> RELEASE_NOTES.md
-        echo "- **Test Cases**: 12 comprehensive tests" >> RELEASE_NOTES.md
-        echo "- **Error Coverage**: 100% (all paths tested)" >> RELEASE_NOTES.md
-        echo "- **Edge Cases**: ~98% coverage" >> RELEASE_NOTES.md
-        echo "- **Cross-platform**: Linux, macOS, Windows" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "## 🔧 Requirements" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "- **Zig 0.15.0 or later** (tested with Zig 0.15.1)" >> RELEASE_NOTES.md
-        echo "- **No external dependencies**" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "## 📦 Installation" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "### Using Zig Package Manager" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "\`\`\`zig" >> RELEASE_NOTES.md
-        echo "// build.zig.zon" >> RELEASE_NOTES.md
-        echo ".{" >> RELEASE_NOTES.md
-        echo "    .dependencies = .{" >> RELEASE_NOTES.md
-        echo "        .base62 = .{" >> RELEASE_NOTES.md
-        echo "            .url = \"https://github.com/username/zig-base62/archive/${GITHUB_REF#refs/tags/}.tar.gz\"," >> RELEASE_NOTES.md
-        echo "            .hash = \"...\", // Generated by zig build" >> RELEASE_NOTES.md
-        echo "        }," >> RELEASE_NOTES.md
-        echo "    }," >> RELEASE_NOTES.md
-        echo "}" >> RELEASE_NOTES.md
-        echo "\`\`\`" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "### Manual Installation" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "Download and extract the source archive, then include in your project." >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "## 🚀 Quick Start" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "\`\`\`zig" >> RELEASE_NOTES.md
-        echo "const base62 = @import(\"base62\");" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "// Encode an integer" >> RELEASE_NOTES.md
-        echo "const encoded = try base62.encodeInt(12345, allocator);" >> RELEASE_NOTES.md
-        echo "defer allocator.free(encoded);" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "// Decode back to integer" >> RELEASE_NOTES.md
-        echo "const decoded = try base62.decodeInt(encoded);" >> RELEASE_NOTES.md
-        echo "\`\`\`" >> RELEASE_NOTES.md
-        echo "" >> RELEASE_NOTES.md
-        echo "See [README.md](README.md) for complete documentation and examples." >> RELEASE_NOTES.md
+      - name: Generate release notes
+        run: |
+          echo "# Base62 Library ${GITHUB_REF#refs/tags/}" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "A high-performance Base62 encoding/decoding library written in Zig." >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## ✨ Features" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "- **Fast integer encoding/decoding** using optimized" \
+            "algorithms" >> RELEASE_NOTES.md
+          echo "- **Byte array support** for arbitrary data encoding" \
+            >> RELEASE_NOTES.md
+          echo "- **Custom alphabet support** for different character" \
+            "sets" >> RELEASE_NOTES.md
+          echo "- **Memory safe** with proper error handling" >> RELEASE_NOTES.md
+          echo "- **Zero dependencies** - uses only Zig standard" \
+            "library" >> RELEASE_NOTES.md
+          echo "- **Comprehensive tests** with 100% function coverage" \
+            "(12 test cases)" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## 📊 Quality Metrics" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "- **Function Coverage**: 100% (14/14 functions)" >> RELEASE_NOTES.md
+          echo "- **Test Cases**: 12 comprehensive tests" >> RELEASE_NOTES.md
+          echo "- **Error Coverage**: 100% (all paths tested)" >> RELEASE_NOTES.md
+          echo "- **Edge Cases**: ~98% coverage" >> RELEASE_NOTES.md
+          echo "- **Cross-platform**: Linux, macOS, Windows" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## 🔧 Requirements" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "- **Zig 0.15.0 or later** (tested with Zig 0.15.1)" >> RELEASE_NOTES.md
+          echo "- **No external dependencies**" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## 📦 Installation" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "### Using Zig Package Manager" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "\`\`\`zig" >> RELEASE_NOTES.md
+          echo "// build.zig.zon" >> RELEASE_NOTES.md
+          echo ".{" >> RELEASE_NOTES.md
+          echo "    .dependencies = .{" >> RELEASE_NOTES.md
+          echo "        .base62 = .{" >> RELEASE_NOTES.md
+          echo "            .url = \"https://github.com/username/" \
+            "zig-base62/archive/${GITHUB_REF#refs/tags/}.tar.gz\"," \
+            >> RELEASE_NOTES.md
+          echo "            .hash = \"...\", // Generated by zig build" >> RELEASE_NOTES.md
+          echo "        }," >> RELEASE_NOTES.md
+          echo "    }," >> RELEASE_NOTES.md
+          echo "}" >> RELEASE_NOTES.md
+          echo "\`\`\`" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "### Manual Installation" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "Download and extract the source archive, then include in" \
+            "your project." >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## 🚀 Quick Start" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "\`\`\`zig" >> RELEASE_NOTES.md
+          echo "const base62 = @import(\"base62\");" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "// Encode an integer" >> RELEASE_NOTES.md
+          echo "const encoded = try base62.encodeInt(12345, allocator);" \
+            >> RELEASE_NOTES.md
+          echo "defer allocator.free(encoded);" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "// Decode back to integer" >> RELEASE_NOTES.md
+          echo "const decoded = try base62.decodeInt(encoded);" >> RELEASE_NOTES.md
+          echo "\`\`\`" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "See [README.md](README.md) for complete documentation" \
+            "and examples." >> RELEASE_NOTES.md
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      with:
-        name: Base62 Library ${{ github.ref_name }}
-        body_path: RELEASE_NOTES.md
-        files: |
-          release/base62-${{ github.ref_name }}.tar.gz
-          release/base62-${{ github.ref_name }}.zip
-          coverage/index.html
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Base62 Library ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            release/base62-${{ github.ref_name }}.tar.gz
+            release/base62-${{ github.ref_name }}.zip
+            coverage/index.html
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload coverage to release
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-coverage-${{ github.ref_name }}
-        path: coverage/
-        retention-days: 365
+      - name: Upload coverage to release
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-coverage-${{ github.ref_name }}
+          path: coverage/
+          retention-days: 365
