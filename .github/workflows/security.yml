@@ -201,26 +201,34 @@ jobs:
         run: |
           echo "🔢 Testing integer overflow protection..."
 
-          # Our tests include overflow detection, so this verifies it works
-          if ! zig test src/base62.zig | \
-            grep -q "overflow detection.*OK"; then
-            echo "❌ Overflow detection test not found or failing"
-            exit 1
-          else
+          # Run tests and capture output
+          test_output=$(zig test src/base62.zig 2>&1)
+
+          # Check if overflow detection test exists and passes
+          if echo "$test_output" | grep -q "base62.test.overflow detection.*OK"; then
             echo "✅ Integer overflow protection verified"
+          else
+            echo "❌ Overflow detection test not found or failing"
+            echo "Test output:"
+            echo "$test_output"
+            exit 1
           fi
 
       - name: Input validation testing
         run: |
           echo "✏️ Testing input validation..."
 
-          # Verify our error condition tests are working
-          if ! zig test src/base62.zig | \
-            grep -q "error conditions.*OK"; then
-            echo "❌ Error condition tests not found or failing"
-            exit 1
-          else
+          # Run tests and capture output
+          test_output=$(zig test src/base62.zig 2>&1)
+
+          # Check if error conditions test exists and passes
+          if echo "$test_output" | grep -q "base62.test.error conditions.*OK"; then
             echo "✅ Input validation tests verified"
+          else
+            echo "❌ Error condition tests not found or failing"
+            echo "Test output:"
+            echo "$test_output"
+            exit 1
           fi
 
       - name: Generate security report
