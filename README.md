@@ -251,4 +251,4 @@ Complete documentation available in the `docs/` directory:
 
 Apache 2.0
 
-###### dpw | 2025.09.27
+###### dpw | 2025.09.28

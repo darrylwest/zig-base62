@@ -24,33 +24,51 @@ jobs:
         run: |
           echo "🔍 Scanning for secrets and sensitive information..."
 
-          # Check for various secret patterns
-          secret_patterns=(
-            "password"
-            "secret"
-            "key.*="
-            "token"
-            "api[_-]?key"
-            "auth[_-]?token"
-            "private[_-]?key"
-            "-----BEGIN.*PRIVATE KEY-----"
-          )
-
+          # Check for actual secret patterns (not documentation mentions)
           found_secrets=false
-          for pattern in "${secret_patterns[@]}"; do
-            if grep -r -i -E "$pattern" --include="*.zig" \
-            --include="*.md" --exclude-dir=.git .; then
-              echo "⚠️ Potential secret found matching pattern: $pattern"
-              found_secrets=true
-            fi
-          done
+
+          # Check for password assignments
+          if grep -r -E "(password\s*=|PASSWORD\s*=)" --include="*.zig" src/; then
+            echo "⚠️ Potential password found in source code"
+            found_secrets=true
+          fi
+
+          # Check for secret assignments
+          if grep -r -E "(secret\s*=|SECRET\s*=)" --include="*.zig" src/; then
+            echo "⚠️ Potential secret found in source code"
+            found_secrets=true
+          fi
+
+          # Check for API key assignments
+          if grep -r -E "(api[_-]?key\s*=|API[_-]?KEY\s*=)" --include="*.zig" src/; then
+            echo "⚠️ Potential API key found in source code"
+            found_secrets=true
+          fi
+
+          # Check for auth token assignments
+          if grep -r -E "(auth[_-]?token\s*=|AUTH[_-]?TOKEN\s*=)" --include="*.zig" src/; then
+            echo "⚠️ Potential auth token found in source code"
+            found_secrets=true
+          fi
+
+          # Check for private key assignments
+          if grep -r -E "(private[_-]?key\s*=|PRIVATE[_-]?KEY\s*=)" --include="*.zig" src/; then
+            echo "⚠️ Potential private key found in source code"
+            found_secrets=true
+          fi
+
+          # Check for actual private key blocks
+          if grep -r "-----BEGIN.*PRIVATE KEY-----" --include="*.zig" src/; then
+            echo "⚠️ Private key block found in source code"
+            found_secrets=true
+          fi
 
           if [ "$found_secrets" = true ]; then
             echo "❌ Secrets detected - please review and remove" \
               "sensitive information"
             exit 1
           else
-            echo "✅ No secrets detected"
+            echo "✅ No secrets detected in source code"
           fi
 
       - name: Check file permissions
