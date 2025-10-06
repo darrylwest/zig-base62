@@ -30,7 +30,37 @@ Default alphabet: `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxy
 
 ## Quick Start
 
-### Basic Usage
+### Command Line Interface
+
+The library includes a CLI tool for quick encoding and decoding:
+
+```bash
+# Build the CLI executable
+zig build
+
+# Encode a number to base62
+./zig-out/bin/base62 --encode 123
+# Output: 1z
+
+# Decode a base62 string to number
+./zig-out/bin/base62 --decode 1z
+# Output: 123
+
+# Use with zig build run
+zig build run -- --encode 1000000
+# Output: 4C92
+
+zig build run -- --decode 4C92
+# Output: 1000000
+
+# Show help
+./zig-out/bin/base62 --help
+
+# Show version
+./zig-out/bin/base62 --version
+```
+
+### Library Usage
 
 ```zig
 const std = @import("std");
@@ -119,6 +149,12 @@ const Base62Error = error{
 ## Building
 
 ```bash
+# Build the CLI executable
+zig build
+
+# Run the CLI
+zig build run -- --encode 123
+
 # Run tests
 zig build test
 
@@ -226,7 +262,8 @@ base62/
 ├── src/              # Core library source code
 │   ├── base62.zig    # Main library module
 │   ├── config.zig    # Configuration and validation
-│   └── errors.zig    # Error definitions
+│   ├── errors.zig    # Error definitions
+│   └── main.zig      # CLI application
 ├── tests/            # Test directory
 ├── examples/         # Usage examples
 │   ├── usage.zig     # Comprehensive usage examples
@@ -260,5 +297,5 @@ Complete documentation available in the `docs/` directory:
 
 Apache 2.0
 
-###### dpw | 2025.09.28
+###### dpw | 2025.10.06
 
